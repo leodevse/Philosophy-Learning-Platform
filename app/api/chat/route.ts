@@ -14,7 +14,7 @@ import { TUTOR_SYSTEM_PROMPT } from "@/lib/prompts";
 
 const limits = getChatLimits();
 
-export const maxDuration = limits.maxDurationSec;
+export const maxDuration = 10;
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
