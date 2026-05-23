@@ -146,7 +146,7 @@ export function ChatInterface({ className }: { className?: string }) {
           {(error || emptyReply) && (
             <p className="text-center text-caption text-destructive">
               {error?.message ||
-                "Không nhận được câu trả lời. Kiểm tra OPENROUTER_API_KEY và thử lại."}
+                "Không nhận được câu trả lời. Trên Vercel: thêm OPENROUTER_API_KEY trong Settings, hoặc hỏi ngắn hơn (giới hạn 10 giây)."}
             </p>
           )}
         </div>
