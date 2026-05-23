@@ -1,10 +1,19 @@
 import { createOpenAI } from "@ai-sdk/openai";
 
-/** Model mặc định — ID phải đúng slug OpenRouter (vd. openrouter/owl-alpha). */
+/** Local dev — model mạnh, không bị giới hạn 10s. */
 export const DEFAULT_OPENROUTER_MODEL = "openrouter/owl-alpha";
 
-/** Đọc lúc gọi API — không cache lúc build. */
+/**
+ * Model nhanh cho Vercel Hobby (~10s).
+ * Đặt OPENROUTER_MODEL_FAST trên Vercel nếu muốn đổi model khác.
+ */
+export const VERCEL_FAST_MODEL = "google/gemini-2.0-flash-lite-001:free";
+
 export function getOpenRouterModel(): string {
+  if (process.env.VERCEL === "1") {
+    // Hobby 10s — không dùng owl-alpha (quá chậm). Chỉ OPENROUTER_MODEL_FAST hoặc model nhanh mặc định.
+    return process.env.OPENROUTER_MODEL_FAST?.trim() || VERCEL_FAST_MODEL;
+  }
   return process.env.OPENROUTER_MODEL?.trim() || DEFAULT_OPENROUTER_MODEL;
 }
 
