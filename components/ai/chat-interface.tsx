@@ -45,12 +45,24 @@ export function ChatInterface({ className }: { className?: string }) {
   const [pinnedToBottom, setPinnedToBottom] = useState(true);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
+  const [emptyReply, setEmptyReply] = useState(false);
+
   const { messages, sendMessage, status, error } = useChat({
     transport: new DefaultChatTransport({ api: "/api/chat" }),
     messages: initialMessages,
+    onError: () => setEmptyReply(false),
   });
 
   const isLoading = status === "submitted" || status === "streaming";
+
+  useEffect(() => {
+    if (isLoading) {
+      setEmptyReply(false);
+      return;
+    }
+    const last = messages[messages.length - 1];
+    setEmptyReply(last?.role === "user");
+  }, [isLoading, messages]);
 
   const isNearBottom = useCallback(() => {
     const el = scrollContainerRef.current;
@@ -88,6 +100,7 @@ export function ChatInterface({ className }: { className?: string }) {
     const text = input.trim();
     if (!text || isLoading) return;
     setPinnedToBottom(true);
+    setEmptyReply(false);
     sendMessage({ text });
     setInput("");
     requestAnimationFrame(() => scrollToBottom("smooth"));
@@ -130,10 +143,10 @@ export function ChatInterface({ className }: { className?: string }) {
             <TypingLoader />
           )}
 
-          {error && (
+          {(error || emptyReply) && (
             <p className="text-center text-caption text-destructive">
-              {error.message ||
-                "Không thể kết nối gia sư AI. Vui lòng thử lại."}
+              {error?.message ||
+                "Không nhận được câu trả lời. Kiểm tra OPENROUTER_API_KEY và thử lại."}
             </p>
           )}
         </div>

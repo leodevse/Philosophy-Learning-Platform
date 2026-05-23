@@ -9,9 +9,14 @@ import {
   getOpenRouterApiKey,
   getOpenRouterModel,
 } from "@/lib/openrouter";
+import { getChatLimits } from "@/lib/chat-limits";
 import { TUTOR_SYSTEM_PROMPT } from "@/lib/prompts";
 
-export const maxDuration = 30;
+const limits = getChatLimits();
+
+export const maxDuration = limits.maxDurationSec;
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 export async function POST(req: Request) {
   if (!getOpenRouterApiKey()) {
@@ -32,7 +37,8 @@ export async function POST(req: Request) {
     );
   }
 
-  const { messages }: { messages: UIMessage[] } = await req.json();
+  const { messages: allMessages }: { messages: UIMessage[] } = await req.json();
+  const messages = allMessages.slice(-limits.maxMessages);
 
   if (!messages?.length) {
     return new Response(JSON.stringify({ error: "No messages provided." }), {
@@ -47,9 +53,23 @@ export async function POST(req: Request) {
       model: openrouter.chat(getOpenRouterModel()),
       system: TUTOR_SYSTEM_PROMPT,
       messages: await convertToModelMessages(messages),
+      maxOutputTokens: limits.maxOutputTokens,
+      ...(limits.streamTimeoutMs != null && {
+        timeout: limits.streamTimeoutMs,
+      }),
+      abortSignal: req.signal,
+      onError: ({ error }) => {
+        console.error("[chat] stream error:", error);
+      },
     });
 
-    return result.toUIMessageStreamResponse();
+    return result.toUIMessageStreamResponse({
+      headers: {
+        "Cache-Control": "no-cache, no-transform",
+        Connection: "keep-alive",
+        "X-Accel-Buffering": "no",
+      },
+    });
   } catch (err) {
     const message =
       err instanceof Error ? err.message : "OpenRouter request failed.";

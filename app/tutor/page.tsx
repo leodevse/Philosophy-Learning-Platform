@@ -21,6 +21,10 @@ export default function TutorPage() {
             Đặt câu hỏi về Khắc kỷ, Hiện sinh, Đạo giáo — gia sư trả lời từng
             đoạn để bạn theo dõi và suy ngẫm cùng nội dung.
           </p>
+          <p className="max-w-2xl text-caption text-on-surface-variant/80">
+            Mỗi lượt trả lời ngắn gọn (2–3 ý chính). Muốn đi sâu hơn, hãy hỏi
+            tiếp từng phần.
+          </p>
         </header>
 
         <ChatInterface />
